@@ -4,7 +4,7 @@ import React from 'react'
 
 import Movie from '../Movie'
 
-export default function MovieList({ movieData, dataLoading, error, errorMessage }) {
+export default function MovieList({ movieData, dataLoading, error, errorMessage, guestSessionId }) {
   let movies = []
   if (error) {
     return error ? (
@@ -24,7 +24,7 @@ export default function MovieList({ movieData, dataLoading, error, errorMessage 
   } else {
     movies = movieData.map((movie) => {
       const { id, ...movieProps } = movie
-      return <Movie {...movieProps} id={id} key={id} />
+      return <Movie {...movieProps} id={id} key={id} guestSessionId={guestSessionId} />
     })
   }
   return <ul className="movie-list">{movies}</ul>

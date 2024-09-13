@@ -1,11 +1,28 @@
 import './Movie.css'
 import { parseISO, format } from 'date-fns'
 import { enGB } from 'date-fns/locale'
-import { Spin } from 'antd'
+import { Rate, Spin } from 'antd'
 import React from 'react'
 
-export default function Movie({ id, dataLoading, error, errorMessage, ...movieProps }) {
-  const content = !(dataLoading || error) ? <MovieFragment {...movieProps} /> : null
+import MovieGenres from '../MovieGenres'
+import MovieApiService from '../../MovieApiService'
+
+export default function Movie({ id, dataLoading, error, errorMessage, guestSessionId, ...movieProps }) {
+  const movieService = new MovieApiService()
+  movieService.addGuestSessionId(guestSessionId)
+  const onRated = (starsCount) => {
+    sessionStorage.setItem(id.toString(), starsCount.toString())
+    movieService.addRating(id, starsCount)
+  }
+  const hasStarsDefaultValue = () => {
+    if (sessionStorage.getItem(id)) {
+      return sessionStorage.getItem(id)
+    }
+    return 0
+  }
+  const content = !(dataLoading || error) ? (
+    <MovieFragment {...movieProps} onRated={onRated} hasStarsDefaultValue={hasStarsDefaultValue} />
+  ) : null
   const spin = dataLoading ? (
     <div className="movie__loading">
       <Spin size="large" />
@@ -19,11 +36,34 @@ export default function Movie({ id, dataLoading, error, errorMessage, ...moviePr
   )
 }
 
-function MovieFragment({ title, releaseDate, genres, overview, voteAverage, imageSrc }) {
+function MovieFragment({
+  title,
+  releaseDate,
+  genresIds,
+  overview,
+  voteAverage,
+  imageSrc,
+  onRated,
+  hasStarsDefaultValue,
+}) {
   function editOverview(text) {
+    let maxOverviewLength = 300
+    if (title.length > 22 || genresIds.length > 3) {
+      maxOverviewLength = 280
+    }
+    if (title.length > 22 && genresIds.length > 3) {
+      maxOverviewLength = 220
+    }
+    if ((title.length > 30 && genresIds.length > 3) || title.length > 44) {
+      maxOverviewLength = 180
+    }
+    if ((title.length > 44 && genresIds.length > 3) || title.length > 66) {
+      maxOverviewLength = 140
+    }
+
     if (text && text.length !== 0) {
-      if (text.length > 250) {
-        let newText = text.substring(0, 250)
+      if (text.length > maxOverviewLength) {
+        let newText = text.substring(0, maxOverviewLength)
         newText = `${newText.replace(/\s+\S*$/, '')}...`
         return newText
       }
@@ -37,21 +77,38 @@ function MovieFragment({ title, releaseDate, genres, overview, voteAverage, imag
     }
     return 'The release date is not known'
   }
-
+  function getVoteAverageClassName(rating) {
+    if (rating <= 3) {
+      return 'movie__vote-average--terrible'
+    }
+    if (rating <= 5) {
+      return 'movie__vote-average--bad'
+    }
+    if (rating <= 7) {
+      return 'movie__vote-average--ok'
+    }
+    return 'movie__vote-average--good'
+  }
   return (
     <>
       <img src={imageSrc} alt={`poster for '${title}'`} className="movie__image" />
       <div className="movie__info">
         <div className="movie__header">
           <h3 className="movie__title">{title}</h3>
-          <p className="movie__vote-average">{voteAverage}</p>
+          <p className={`movie__vote-average ${getVoteAverageClassName(voteAverage)}`}>
+            {voteAverage.toString().slice(0, 3)}
+          </p>
         </div>
         <p className="movie__date">{editDate(releaseDate)}</p>
-        <div className="movie__genres">
-          <button className="movie__genre-button">drama {genres}</button>
-          <button className="movie__genre-button">comedy {genres}</button>
-        </div>
+        <MovieGenres genresIds={genresIds} />
         <p className="movie__overview">{editOverview(overview)}</p>
+        <Rate
+          rootClassName="movie__rate-stars"
+          count={10}
+          fontSize={10}
+          onChange={onRated}
+          defaultValue={hasStarsDefaultValue()}
+        />
       </div>
     </>
   )
