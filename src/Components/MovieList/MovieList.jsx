@@ -4,14 +4,17 @@ import React from 'react'
 
 import Movie from '../Movie'
 
-export default function MovieList({ movieData, dataLoading, error, errorMessage, guestSessionId }) {
+export default function MovieList({ movieData, dataLoading, error, errorMessage, guestSessionId, ratedError }) {
   let movies = []
+  if (ratedError) {
+    return <Alert type="error" message="Вы еще не оценили ни одного фильма :(" />
+  }
   if (error) {
     return error ? (
       <div className="error">
         <Alert
           type="error"
-          message={`Произошла ошибка при загрузке данных. Попробуйте отправить запрос повторно или измените текст запроса.
+          message={`Произошла ошибка при загрузке данных. Попробуйте отправить запрос повторно.
           Ошибка: ${errorMessage}`}
         />
       </div>

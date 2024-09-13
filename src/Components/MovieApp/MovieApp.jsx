@@ -17,6 +17,7 @@ export default class MovieApp extends Component {
     movieData: null,
     ratedData: null,
     dataLoading: true,
+    ratedError: false,
     error: false,
     errorMessage: null,
     genresData: null,
@@ -44,6 +45,7 @@ export default class MovieApp extends Component {
     })
     this.updateMovies(query)
     this.downloadGenres()
+    sessionStorage.clear()
   }
 
   onError = (err) => {
@@ -56,9 +58,11 @@ export default class MovieApp extends Component {
 
   onFilterTab = (e) => {
     const filterTab = e.target
-    const { filterTabs } = this.state
+    const { filterTabs, query, page, ratedPage } = this.state
     const activeFilterTab = filterTabs.filter((tab) => tab.isActive === true)[0]
     if (filterTab.textContent === 'Search' && activeFilterTab.label !== 'Search') {
+      this.setState({ dataLoading: true })
+      this.updateMovies(query, page)
       this.setState({
         filterTabs: [
           {
@@ -72,8 +76,12 @@ export default class MovieApp extends Component {
         ],
       })
     } else if (filterTab.textContent === 'Rated' && activeFilterTab.label !== 'Rated') {
-      this.setState({ dataLoading: true })
-      this.getRatedMovies()
+      if (sessionStorage.length === 0) {
+        this.setState({ ratedError: true })
+      } else {
+        this.setState({ ratedError: false, dataLoading: true })
+        this.getRatedMovies(ratedPage)
+      }
       this.setState({
         filterTabs: [
           {
@@ -152,6 +160,7 @@ export default class MovieApp extends Component {
       movieData,
       dataLoading,
       error,
+      ratedError,
       errorMessage,
       filterTabs,
       page,
@@ -189,7 +198,13 @@ export default class MovieApp extends Component {
       </>
     ) : (
       <>
-        <MovieList movieData={ratedData} dataLoading={dataLoading} error={error} errorMessage={errorMessage} />
+        <MovieList
+          movieData={ratedData}
+          ratedError={ratedError}
+          dataLoading={dataLoading}
+          error={error}
+          errorMessage={errorMessage}
+        />
         <Pagination
           defaultCurrent={1}
           current={ratedPage}
