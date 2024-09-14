@@ -1,5 +1,5 @@
 .search-bar {
-    width: 1015px;
+    width: 935px;
     height: 40px;
     padding-left: 10px;
     padding-bottom: 3px;
@@ -16,4 +16,22 @@
 }
 .search-bar::placeholder {
     color: #D9D9D9;
+}
+
+@media (width < 1015px) {
+    .search-bar {
+        width: 450px;
+    }
+}
+
+@media (width < 500px) {
+    .search-bar {
+        width: 380px;
+    }
+}
+
+@media (width < 400px) {
+    .search-bar {
+        width: 360px;
+    }
 }

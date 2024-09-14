@@ -24,7 +24,7 @@ export default function Movie({ id, dataLoading, error, errorMessage, guestSessi
     <MovieFragment {...movieProps} onRated={onRated} hasStarsDefaultValue={hasStarsDefaultValue} />
   ) : null
   const spin = dataLoading ? (
-    <div className="movie__loading">
+    <div className="movie-list__movie movie__loading">
       <Spin size="large" />
     </div>
   ) : null
@@ -65,11 +65,11 @@ function MovieFragment({
       if (text.length > maxOverviewLength) {
         let newText = text.substring(0, maxOverviewLength)
         newText = `${newText.replace(/\s+\S*$/, '')}...`
-        return newText
+        return <p className="movie__overview">{newText}</p>
       }
-      return text
+      return <p className="movie__overview">{text}</p>
     }
-    return <span className="movie__empty-overview">The overview is empty :(</span>
+    return <p className="movie__empty-overview">The overview is empty :(</p>
   }
   function editDate(date) {
     if (date && date.length !== 0) {
@@ -101,7 +101,7 @@ function MovieFragment({
         </div>
         <p className="movie__date">{editDate(releaseDate)}</p>
         <MovieGenres genresIds={genresIds} />
-        <p className="movie__overview">{editOverview(overview)}</p>
+        {editOverview(overview)}
         <Rate
           rootClassName="movie__rate-stars"
           count={10}
